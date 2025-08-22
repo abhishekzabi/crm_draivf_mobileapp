@@ -2,7 +2,9 @@ import 'package:crm_draivfmobileapp/core/constatnts/colors.dart';
 import 'package:crm_draivfmobileapp/core/constatnts/font_types.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constatnts/images.dart';
+import '../chart_screen.dart';
 import '../login/login_screen.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class DashboardScreen extends StatefulWidget {
   final String userEmail;
@@ -14,34 +16,146 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final List<String> zones = [
+    "Chennai",
+    "Karnataka",
+    "Central TN",
+    "Kerala",
+    "South TN",
+    "West1 TN",
+    "AP & Vellore",
+    "West2 TN",
+    "International",
+    "Not Specified",
+  ];
+
+  final List<int> targetLeads = [
+    1950,
+    1201,
+    1500,
+    1577,
+    600,
+    1400,
+    1200,
+    1000,
+    0,
+    0,
+  ];
+
+  final List<int> actualLeads = [
+    1200,
+    951,
+    1577,
+    1500,
+    392,
+    1004,
+    633,
+    460,
+    3,
+    573,
+  ];
+
   void _logout(BuildContext context) {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
-      (route) => false,
+          (route) => false,
     );
+  }
+
+  List<BarChartGroupData> _generateBarGroups() {
+    return List.generate(zones.length, (index) {
+      return BarChartGroupData(
+        x: index,
+        barsSpace: 4,
+        barRods: [
+          BarChartRodData(
+            toY: targetLeads[index].toDouble(),
+            color: Colors.orange,
+            width: 14,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          BarChartRodData(
+            toY: actualLeads[index].toDouble(),
+            color: Colors.deepOrange,
+            width: 14,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ],
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       drawer: _buildDrawer(context),
       appBar: AppBar(
-        // toolbarHeight: 70,
         iconTheme: IconThemeData(color: AppColor.whiteColor),
         centerTitle: true,
         title: Image.asset(AppImages.logo, height: 30, width: 200),
         backgroundColor: AppColor.primaryColor2,
       ),
-      body: const Center(
-        child: Text(
-          "Welcome to Dashboard!",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            fontFamily: MyFonts.poppins,
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: ListView(
+          children: [
+            Text(
+              "Dashboard - Charts",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontFamily: MyFonts.poppins,
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // ✅ 8 Chart Buttons
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // Two buttons per row
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.6,
+              ),
+              itemCount: 8,
+              itemBuilder: (context, index) {
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.primaryColor2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    padding: const EdgeInsets.all(12),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChartDetailsScreen(
+                          chartIndex: index,
+                          zones: zones,
+                          targetLeads: targetLeads,
+                          actualLeads: actualLeads,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    "Chart ${index + 1}",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: MyFonts.poppins,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -98,72 +212,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
             ),
-
-            // Dashboard
-            ExpansionTile(
-              leading: Icon(Icons.dashboard, color: Colors.white),
-              title: _drawerText("Dashboard"),
-              trailing: Icon(Icons.arrow_drop_down, color: Colors.white),
-              children: [
-                _buildSubMenuItem(
-                  title: "Main Dashboard",
-                  onTap: () => Navigator.pop(context),
-                ),
-                _buildSubMenuItem(
-                  title: "Tele Dashboard",
-                  onTap: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-
-            // Leads
-            ExpansionTile(
-              leading: Icon(Icons.call, color: Colors.white),
-              title: _drawerText("Leads"),
-              trailing: Icon(Icons.arrow_drop_down, color: Colors.white),
-              children: [
-                _buildSubMenuItem(
-                  title: "Domestic Leads",
-                  onTap: () => Navigator.pop(context),
-                ),
-                _buildSubMenuItem(
-                  title: "International Leads",
-                  onTap: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-
-            // Donor Leads
-            ExpansionTile(
-              leading: Icon(Icons.leaderboard, color: Colors.white),
-              title: _drawerText("Donor Leads"),
-              trailing: Icon(Icons.arrow_drop_down, color: Colors.white),
-              children: [
-                _buildSubMenuItem(
-                  title: "Donor Leads",
-                  onTap: () => Navigator.pop(context),
-                ),
-                _buildSubMenuItem(
-                  title: "Donor Leads New",
-                  onTap: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-
-            _buildDrawerItem(
-              icon: Icons.school,
-              title: "Course",
-              onTap: () => Navigator.pop(context),
-            ),
-            _buildDrawerItem(
-              icon: Icons.person,
-              title: "Enquiry",
-              onTap: () => Navigator.pop(context),
-            ),
-
             Divider(color: Colors.white.withOpacity(0.3)),
-
-            // Logout Button
             _buildDrawerItem(
               icon: Icons.logout,
               title: "Logout",
@@ -173,26 +222,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
               isLogout: true,
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  // ---------------- Drawer Text Style ----------------
-  Text _drawerText(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        color: Colors.white,
-        fontFamily: MyFonts.poppins,
-        fontSize: 16,
-      ),
-    );
-  }
-
-  // ---------------- Drawer Item ----------------
   Widget _buildDrawerItem({
     required IconData icon,
     required String title,
@@ -211,26 +246,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           color: isLogout ? Colors.redAccent : Colors.white,
           fontFamily: MyFonts.poppins,
           fontSize: 16,
-        ),
-      ),
-      onTap: onTap,
-    );
-  }
-
-  // ---------------- Sub Menu Item ----------------
-  Widget _buildSubMenuItem({
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      contentPadding: const EdgeInsets.only(left: 72, right: 16),
-      dense: true,
-      title: Text(
-        title,
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.9),
-          fontFamily: MyFonts.poppins,
-          fontSize: 15,
         ),
       ),
       onTap: onTap,
